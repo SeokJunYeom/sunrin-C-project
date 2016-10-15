@@ -1,22 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <Windows.h>
 
 #define BUF_SIZE 1024
 
-int fileLen(FILE *fp);
-void fileCopy(FILE *fromStream, FILE *toStream, int fileLen);
+void gotoxy(int x, int y);
+double fileLen(FILE *fp);
+void fileCopy(FILE *fromStream, FILE *toStream, double fileLen);
 
 int main()
 {
 	FILE *fp1 = NULL;
 	FILE *fp2 = NULL;
-	
-	char fileName[] = "D:\\Users\\PC81\\Desktop\\test.jpg";
-	int len;
 
-	fp1 = fopen(fileName, "rb");
-	fp2 = fopen("D:\\Users\\PC81\\Desktop\\test2.jpg", "wb");
+	char fromFileName[] = "D:\\Users\\PC81\\Desktop\\test.jpg";
+	char toFileName[] = "D:\\Users\\PC81\\Desktop\\test2.jpg";
+	double len;
+
+	fp1 = fopen(fromFileName, "rb");
+	fp2 = fopen(toFileName, "wb");
 
 	len = fileLen(fp1);
 
@@ -24,13 +27,19 @@ int main()
 
 	fclose(fp1);
 	fclose(fp2);
-	
+
 	return 0;
 }
 
-int fileLen(FILE *fp)
+void gotoxy(int x, int y)
 {
-	int len;
+	COORD Pos = { x, y };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
+}
+
+double fileLen(FILE *fp)
+{
+	double len;
 
 	fseek(fp, 0, SEEK_END);
 	len = ftell(fp);
@@ -39,24 +48,24 @@ int fileLen(FILE *fp)
 	return len;
 }
 
-void fileCopy(FILE *fromStream, FILE *toStream, int fileLen)
+void fileCopy(FILE *fromStream, FILE *toStream, double fileLen)
 {
 	char buf[BUF_SIZE];
 	int count = 0;
 
 	while (!feof(fromStream))
 	{
-		system("cls");
+		gotoxy(0, 0);
 
 		fread((void *)buf, 1, BUF_SIZE, fromStream);
 		fwrite((void *)buf, 1, BUF_SIZE, toStream);
 
-		printf("%.2f%%\n", BUF_SIZE * count / (double)fileLen * 100);
+		printf(" %.2f%%\n", BUF_SIZE * count / fileLen * 100);
 		++count;
 	}
 
-	system("cls");
-	printf("100.00\n");
+	gotoxy(0, 0);
+	printf("100.00%%\n");
 
 	return;
 }
