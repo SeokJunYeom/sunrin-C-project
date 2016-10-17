@@ -6,27 +6,34 @@
 #define BUF_SIZE 1024
 
 void gotoxy(int x, int y);
-double fileLen(FILE *fp);
-void fileCopy(FILE *fromStream, FILE *toStream, double fileLen);
+long long getFileLen(FILE *fp);
+void fileCopy(FILE *fromStream, FILE *toStream, long long fileLen);
 
 int main()
 {
-	FILE *fp1 = NULL;
-	FILE *fp2 = NULL;
+	FILE *fromStream = NULL;
+	FILE *toStream = NULL;
 
-	char fromFileName[] = "D:\\Users\\PC81\\Desktop\\test.jpg";
-	char toFileName[] = "D:\\Users\\PC81\\Desktop\\test2.jpg";
-	double len;
+	long long fileLen;
 
-	fp1 = fopen(fromFileName, "rb");
-	fp2 = fopen(toFileName, "wb");
+	char fromFileName[] = "D:\\Users\\PC81\\Desktop\\test.mkv";
+	char toFileName[] = "D:\\Users\\PC81\\Desktop\\test2.mkv";
 
-	len = fileLen(fp1);
+	fromStream = fopen(fromFileName, "rb");
+	toStream = fopen(toFileName, "wb");
 
-	fileCopy(fp1, fp2, len);
+	if (fromStream == NULL || toStream == NULL)
+	{
+		printf("file open error\n");
+		exit(0);
+	}
 
-	fclose(fp1);
-	fclose(fp2);
+	fileLen = getFileLen(fromStream);
+
+	fileCopy(fromStream, toStream, fileLen);
+
+	fclose(fromStream);
+	fclose(toStream);
 
 	return 0;
 }
@@ -37,35 +44,35 @@ void gotoxy(int x, int y)
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
 
-double fileLen(FILE *fp)
+long long getFileLen(FILE *fp)
 {
-	double len;
+	fpos_t pos;
 
 	fseek(fp, 0, SEEK_END);
-	len = ftell(fp);
+	fgetpos(fp, &pos);
 	fseek(fp, 0, SEEK_SET);
 
-	return len;
+	return pos;
 }
 
-void fileCopy(FILE *fromStream, FILE *toStream, double fileLen)
+void fileCopy(FILE *fromStream, FILE *toStream, long long fileLen)
 {
 	char buf[BUF_SIZE];
 	int count = 0;
 
 	while (!feof(fromStream))
-	{
+	{;
 		gotoxy(0, 0);
 
 		fread((void *)buf, 1, BUF_SIZE, fromStream);
 		fwrite((void *)buf, 1, BUF_SIZE, toStream);
 
-		printf(" %.2f%%\n", BUF_SIZE * count / fileLen * 100);
+		printf("%d / %lld (Byte)", count * BUF_SIZE, fileLen);
 		++count;
 	}
 
 	gotoxy(0, 0);
-	printf("100.00%%\n");
+	printf("%lld / %lld (Byte) ¿Ï·á\n", fileLen, fileLen);
 
 	return;
 }
