@@ -6,11 +6,17 @@
 
 #define BUF_SIZE 1024
 
+/**************************** 메뉴얼 ****************************/
 void manual();
+
+/*********************** cursor 관련 함수 ***********************/
 void gotoxy(int x, int y);
-CONSOLE_SCREEN_BUFFER_INFO curInfo();
-void fileCopy(FILE *fromStream, FILE *toStream, long long fileLen);
-long long getFileLen(FILE *fp);
+int curinfoX();
+int curinfoY();
+
+/************************ file 관련 함수 ************************/
+void fileCopy(FILE *fromStream, FILE *toStream, __int64 fileLen);
+__int64 getFileLen(FILE *fp);
 
 int main(int argc, char *argv[])
 {
@@ -18,18 +24,16 @@ int main(int argc, char *argv[])
 	{
 		manual();
 		exit(0);
-	}
+	} // 인자 부족할 경우 메뉴얼 띄우고 프로그램 종료
 
 	else if (!strcmp(argv[1], argv[2]))
 	{
 		manual();
 		exit(0);
-	}
+	} // 원본 파일명과 대상 파일명이 같을 경우 메뉴얼 띄우고 프로그램 종료
 
 	FILE *fromStream = NULL;
 	FILE *toStream = NULL;
-
-	long long fileLen;
 
 	char dir[BUF_SIZE] = { 0, };
 	char fromFileName[BUF_SIZE] = { 0, };
@@ -51,9 +55,7 @@ int main(int argc, char *argv[])
 	{
 		toStream = fopen(toFileName, "wb");
 
-		fileLen = getFileLen(fromStream);
-
-		fileCopy(fromStream, toStream, fileLen);
+		fileCopy(fromStream, toStream, getFileLen(fromStream));
 
 		fclose(fromStream);
 		fclose(toStream);
@@ -64,7 +66,10 @@ int main(int argc, char *argv[])
 
 void manual()
 {
-	printf("Usage : ~~~~~~~~~~~~");
+	printf("Usage  : filecv \"SOURCE\" \"DEST\"\n");
+	printf("SOURCE : mp4 FILE\n");
+	printf("DEST   : mp3 FILE\n");
+	printf("Convert mp4 file to mp3 file.");
 }
 
 void gotoxy(int x, int y)
@@ -73,21 +78,29 @@ void gotoxy(int x, int y)
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
 
-CONSOLE_SCREEN_BUFFER_INFO curInfo()
+int curinfoX()
 {
-	CONSOLE_SCREEN_BUFFER_INFO curInfo;
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &curInfo);
+	CONSOLE_SCREEN_BUFFER_INFO curinfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &curinfo);
 
-	return curInfo;
+	return curinfo.dwCursorPosition.X;
 }
 
-void fileCopy(FILE *fromStream, FILE *toStream, long long fileLen)
+int curinfoY()
+{
+	CONSOLE_SCREEN_BUFFER_INFO curinfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &curinfo);
+
+	return curinfo.dwCursorPosition.X;
+}
+
+void fileCopy(FILE *fromStream, FILE *toStream, __int64 fileLen)
 {
 	char buf[BUF_SIZE];
 	int count = 0;
-	
-	int x = curInfo().dwCursorPosition.X;
-	int y = curInfo().dwCursorPosition.Y;
+
+	int x = curinfoX();
+	int y = curinfoY();
 
 	while (!feof(fromStream))
 	{
@@ -104,7 +117,7 @@ void fileCopy(FILE *fromStream, FILE *toStream, long long fileLen)
 	printf("%lld / %lld (Byte) 완료", fileLen, fileLen);
 }
 
-long long getFileLen(FILE *fp)
+__int64 getFileLen(FILE *fp)
 {
 	fpos_t pos;
 
