@@ -7,6 +7,15 @@
 
 #define BUF_SIZE 1024
 
+typedef struct dictionary
+{
+	char *key;
+	int value;
+}DICTIONARY;
+
+/************************** 오류 검출 ***************************/
+int errorPM(int argc, char *argv[]);
+
 /**************************** 형변환 ****************************/
 int hexToInt(char * hexadecimal);
 
@@ -25,22 +34,20 @@ int sizeofBox(FILE *fp);
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2)
-	{
-		manual();
-		exit(0);
-	} // 인자 부족할 경우 메뉴얼 띄우고 프로그램 종료
-
 	FILE *fromStream = NULL;
-
 	char dir[BUF_SIZE] = { 0, };
 	char fromFileName[BUF_SIZE] = { 0, };
-
 	char boxName[5] = { 0, };
 	int boxSize;
 
 	getcwd(dir, BUF_SIZE);
 	sprintf(fromFileName, "%s\\%s", dir, argv[1]);
+
+	if (errorPM(argc, argv))
+	{
+		manual();
+		return 0;
+	}
 
 	fromStream = fopen(fromFileName, "rb");
 
@@ -66,6 +73,39 @@ int main(int argc, char *argv[])
 	}
 
 	fclose(fromStream);
+
+	return 0;
+}
+
+int errorPM(int argc, char *argv[])
+{
+	char *str = NULL;
+	char *tmp = NULL;
+
+	if (argc != 2)
+		return 1;
+
+	else if (!(strchr(argv[1], '.') == NULL))
+	{
+		tmp = argv[1];
+		tmp = strtok(tmp, ".");
+
+		while (tmp != NULL)
+		{
+			tmp = strtok(NULL, ".");
+
+			if (tmp == NULL)
+				break;
+
+			str = tmp;
+		}
+
+		if (strcmp(str, "mp4"))
+			return 1;
+	}
+
+	else
+		return 1;
 
 	return 0;
 }
